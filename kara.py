@@ -2,11 +2,12 @@ import time
 from __builtin__ import int
 import locale
 from re import LOCALE
-from pip._vendor.distlib.compat import ZipFile
 from zipfile import ZipInfo, ZIP_DEFLATED
 import zipfile
+from struct import *
+from _ast import Num
 
-book_title = " Thank you "
+book_title = "Thank you"
 f_ip = open("inputfile.txt","r")
 f_html = open("outputfile.html", "w")
 html_header = "<html DIR=\"RTL\">\r\n<head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\r\n<title>" + book_title +"</title>\r\n</head>\r\n<body>\r\n<p DIR=\"RTL\">\r\n"
@@ -21,38 +22,38 @@ myzip.write("outputfile.html", compress_type=zipfile.ZIP_DEFLATED)
 myzip.close()
     
 class FLIS:
-    id = 'FLIS'
-    fixed_val_1 = 8
-    fixed_val_2 = 65
-    fixed_val_3 = 0
-    fixed_val_4 = 0
-    fixed_val_5 = 0xFFFFFFFF
-    fixed_val_6 = 1
-    fixed_val_7 = 3
-    fixed_val_8 = 3
-    fixed_val_9 = 1
-    fixed_val_10 = 0xFFFFFFFF
+    _01id = 'FLIS'
+    _02fixed_val_1 = pack('>i', 8)
+    _03fixed_val_2 = pack('>h', 65)
+    _04fixed_val_3 = pack('>h', 0)
+    _05fixed_val_4 = pack('>i', 0)
+    _06fixed_val_5 = pack('>I', 0xFFFFFFFF)
+    _07fixed_val_6 = pack('>h', 1)
+    _08fixed_val_7 = pack('>h', 3)
+    _09fixed_val_8 = pack('>i', 3)
+    _10fixed_val_9 = pack('>i', 1)
+    _11fixed_val_10 = pack('>I', 0xFFFFFFFF)
 
 class FCIS:
-    id = 'FCIS'
-    fixed_val_1 = 20
-    fixed_val_2 = 16
-    fixed_val_3 = 1
-    fixed_val_4 = 0
-    text_len = 0
-    fixed_val_5 = 0
-    fixed_val_6 = 32
-    fixed_val_7 = 8
-    fixed_val_8 = 1
-    fixed_val_9 = 1
-    fixed_val_10 = 0
+    _01id = 'FCIS'
+    _02fixed_val_1 = pack('>i', 20)
+    _03fixed_val_2 = pack('>i', 16)
+    _04fixed_val_3 = pack('>i', 1)
+    _05fixed_val_4 = pack('>i', 0)
+    _06text_len = 0
+    _07fixed_val_5 = pack('>i', 0)
+    _08fixed_val_6 = pack('>i', 32)
+    _09fixed_val_7 = pack('>i', 8)
+    _10fixed_val_8 = pack('>h', 1)
+    _11fixed_val_9 = pack('>h', 1)
+    _12fixed_val_10 = pack('>i', 0)
 
 class CMET:
-    id = 'CMET'
-    fixed_val_1 = 0xC
-    text_len = 0
-    fixed_val_3 = 1
-    fixed_val_4 = 0
+    _01id = 'CMET'
+    _02fixed_val_1 = pack('>i', 0xC)
+    _03text_len = 0
+    _04fixed_val_3 = 1
+    _05fixed_val_4 = 0
 
 
 class ExthRecord:
@@ -67,85 +68,118 @@ class Exth:
     padding = 0
     
 class Mobi:
-    id = 'MOBI'
-    hdr_len = 0
-    mobi_type = 2
-    text_encoding = 65001
-    unique_id = 0x92602E61
-    file_ver = 5
-    ortographic_idx = 0xFFFFFFFF
-    inflection_idx = 0xFFFFFFFF
-    index_names = 0xFFFFFFFF
-    index_keys = 0xFFFFFFFF
-    extra_idx_0 = 0xFFFFFFFF
-    extra_idx_1 = 0xFFFFFFFF
-    extra_idx_2 = 0xFFFFFFFF
-    extra_idx_3 = 0xFFFFFFFF
-    extra_idx_4 = 0xFFFFFFFF
-    extra_idx_5 = 0xFFFFFFFF
-    first_non_book_idx = 0xFFFFFFFF
-    full_name_offset = 0
-    full_name_len = 0
-    locale = 0
-    input_language = 0
-    output_language = 0
-    min_ver = 5
-    first_img_idx = 0
-    huffman_rec_offset = 0
-    huffman_record_count = 0
-    huffman_table_offset = 0
-    huffman_table_len = 0
-    exth_flags = 0
-    drm_offset = 0xFFFFFFFF
-    drm_count = 0
-    drm_size = 0
-    drm_flags = 0
-    first_content_rec_num = 1
-    last_content_rec_num = 2
-    fcis_rec_num = 4
-    fcis_rec_count = 1
-    flis_rec_num = 3
-    flis_rec_count = 1
-    first_comp_data_sec_count = 2
-    num_of_comp_data_sec = 0xFFFFFFFF
-    extra_rec_data_flags = 1
-    indx_rec_offset = 0xFFFFFFFF
+    _01id = 'MOBI'
+    _02hdr_len = 0
+    _03mobi_type = pack('>i', 2)
+    _04text_encoding = pack('>i', 65001)
+    _05unique_id = pack('>I',0x92602E61)
+    _06file_ver = pack('>i', 5)
+    _07ortographic_idx = pack('>I',0xFFFFFFFF)
+    _08inflection_idx = pack('>I',0xFFFFFFFF)
+    _09index_names = pack('>I',0xFFFFFFFF)
+    _10index_keys = pack('>I',0xFFFFFFFF)
+    _11extra_idx_0 = pack('>I',0xFFFFFFFF)
+    _12extra_idx_1 = pack('>I',0xFFFFFFFF)
+    _13extra_idx_2 = pack('>I',0xFFFFFFFF)
+    _14extra_idx_3 = pack('>I',0xFFFFFFFF)
+    _15extra_idx_4 = pack('>I',0xFFFFFFFF)
+    _16extra_idx_5 = pack('>I',0xFFFFFFFF)
+    _17first_non_book_idx = pack('>I',0xFFFFFFFF)
+    _18full_name_offset = 0
+    _19full_name_len = 0
+    _20locale = pack('>i', 0)
+    _21input_language = pack('>i', 0)
+    _22output_language = pack('>i', 0)
+    _23min_ver = pack('>i', 5)
+    _24first_img_idx = pack('>i', 0)
+    _25huffman_rec_offset = pack('>i', 0)
+    _26huffman_record_count = pack('>i', 0)
+    _27huffman_table_offset = pack('>i', 0)
+    _28huffman_table_len = pack('>i', 0)
+    _29exth_flags = pack('>i', 0)
+    _29zunused = pack('>i', 0)
+    _29zzunused = pack('>i', 0)
+    _29zzzunused = pack('>i', 0)
+    _29zzzzunused = pack('>i', 0)
+    _29zzzzzunused = pack('>i', 0)
+    _29zzzzzzunused = pack('>i', 0)
+    _29zzzzzzzunused = pack('>i', 0)
+    _29zzzzzzzzunused = pack('>i', 0)
+    _29zzzzzzzzzunused = pack('>I',0xFFFFFFFF)
+    _30drm_offset = pack('>I',0xFFFFFFFF)
+    _31drm_count = pack('>i', 0)
+    _32drm_size = pack('>i', 0)
+    _33drm_flags = pack('>i', 0)
+    _33zunused = pack('>i', 0)
+    _33zzunused = pack('>i', 0)
+    _34first_content_rec_num = pack('>h', 1)
+    _35last_content_rec_num = pack('>h', 2)
+    _35zunused = pack('>i', 1)
+    _36fcis_rec_num = pack('>i', 4)
+    _37fcis_rec_count = pack('>i', 1)
+    _38flis_rec_num = pack('>i', 3)
+    _39flis_rec_count = pack('>i', 1)
+    _39zunused = pack('>i', 0)
+    _39zzunused = pack('>i', 0)
+    _39zzzunused = pack('>i', 5)
+    _40first_comp_data_sec_count = pack('>i', 2)
+    _41num_of_comp_data_sec = pack('>I',0xFFFFFFFF)
+    _41zunused = pack('>I',0xFFFFFFFF)
+    _42extra_rec_data_flags = pack('>i', 1)
+    _43indx_rec_offset = pack('>I',0xFFFFFFFF)
+    _43zunused = pack('>I',0xFFFFFFFF)
+    _43zzunused = pack('>I',0xFFFFFFFF)
+    _43zzzunused = pack('>I',0xFFFFFFFF)
+    _43zzzzunused = pack('>I',0xFFFFFFFF)
+    _43zzzzzunused = pack('>I',0xFFFFFFFF)
+    _43zzzzzzunused = pack('>I',0)
+    _43zzzzzzzunused = pack('>I',0xFFFFFFFF)
+    _43zzzzzzzzunused = pack('>I',0)
+
+
+class PalmDOC_Header:
+    _1compression = pack('>h', 1)
+    _2unused = pack('>h', 0)
+    _3text_len = 0
+    _4record_count = pack('>h', 1)
+    _5record_size = pack('>h', 4096)
+    _6curr_pos = pack('>i', 0)
     
 class PDB_Header:
-    name = book_title.replace(" ", "_")
+    name  = pack('>32s', book_title.replace(" ", "_")) 
     name_padding= 32 - len(name)
-    file_attr = 0
-    version = 0
-    creation_time = 0
-    mod_time = 0
-    bkup_time = 0
-    mod_num = 0
-    app_info = 0
-    sort_info = 0
-    type = 'BOOK'
-    creator = 'MOBI'
-    unique_id_seed = 0x27
-    next_record_list = 0
-    num_records = 6
+    _03file_attr = pack('>h', 0)
+    _04version = pack('>h', 0)
+    _05creation_time = 0
+    _06mod_time = 0
+    _07bkup_time = pack('>i', 0)
+    _08mod_num = pack('>i', 0)
+    _09app_info = pack('>i', 0)
+    _10sort_info = pack('>i', 0)
+    _11type = 'BOOK'
+    _12creator = 'MOBI'
+    _13unique_id_seed = pack('>i', 0x27)
+    _14next_record_list = pack('>i', 0)
+    _15num_records = pack('>h', 19)
     records_list = [0x00E8, 
                     0x22D0, 
-                    0x2322, 
-                    0x2324, 
-                    0x2348,
-                    0x2374,
-                    0x24B9,
-                    0x3045,
-                    0x304D, 
-                    0x5235,
-                    0x52E1, 
-                    0x53D9, 
-                    0x54B5, 
-                    0x54C5, 
-                    0x55B9,
-                    0x5699, 
-                    0x56BD, 
-                    0x56E9, 
-                    0x5701]
+                    0x2322+0x67, 
+                    0x2324+0x67, 
+                    0x2348+0x67,
+                    0x2374+0x67,
+                    0x24B9+0x67,
+                    0x3045+0x67,
+                    0x304D+0x67, 
+                    0x5235+0x67,
+                    0x52E1+0x67, 
+                    0x53D9+0x67,
+                    0x54B5+0x67, 
+                    0x54C5+0x67, 
+                    0x55B9+0x67,
+                    0x5699+0x67, 
+                    0x56BD+0x67, 
+                    0x56E9+0x67, 
+                    0x5701+0x67]
     
 def main():
     f_mobi = open("outputfile.mobi","wb")
@@ -154,24 +188,17 @@ def main():
 
 ################## PDB Header ##################
     pdb_hdr = PDB_Header
+    print pdb_hdr.name
     f_mobi.write(pdb_hdr.name)
     for i in range(0, pdb_hdr.name_padding):
         f_mobi.write('\x00')
-    f_mobi.write(str('%04x'%pdb_hdr.file_attr).decode("hex"))
-    f_mobi.write(str('%04x'%pdb_hdr.version).decode("hex"))
-    pdb_hdr.creation_time = hex(int((time.time())))
-    f_mobi.write(pdb_hdr.creation_time.replace("0x", '').decode("hex"))
-    pdb_hdr.mod_time = pdb_hdr.creation_time
-    f_mobi.write(pdb_hdr.mod_time.replace("0x", '').decode("hex"))
-    f_mobi.write(str('%08x'%pdb_hdr.bkup_time).decode("hex"))
-    f_mobi.write(str('%08x'%pdb_hdr.mod_num).decode("hex"))
-    f_mobi.write(str('%08x'%pdb_hdr.app_info).decode("hex"))
-    f_mobi.write(str('%08x'%pdb_hdr.sort_info).decode("hex"))
-    f_mobi.write(pdb_hdr.type)
-    f_mobi.write(pdb_hdr.creator)
-    f_mobi.write(str('%08x'%pdb_hdr.unique_id_seed).decode("hex"))
-    f_mobi.write(str('%08x'%pdb_hdr.next_record_list).decode("hex"))
-    f_mobi.write(str('%04x'%pdb_hdr.num_records).decode("hex"))
+    pdb_hdr._05creation_time = hex(int((time.time())))
+    pdb_hdr._05creation_time = pdb_hdr._05creation_time.replace("0x", '').decode("hex")
+    pdb_hdr._06mod_time = pdb_hdr._05creation_time
+    for i, v in sorted(pdb_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
     record_unique_id = 0
     for i in pdb_hdr.records_list:
         record_unique_id_hex = str('%02x'%record_unique_id).decode("hex") 
@@ -183,96 +210,24 @@ def main():
             
             
 ################## PalmDOC Header ##################
-    # Compression #
-    palm_compression = 0x0001
-    f_mobi.write(str('%04x'%palm_compression).decode("hex"))
-    # Unused #
-    f_mobi.write(str('%04x'%zero_unused).decode("hex"))
-    # Text length #
-    palm_txt_len = 75 + len(ip_data)
-    f_mobi.write(str('%08x'%palm_txt_len).decode("hex"))
-    # Record count #
-    palm_record_count = 1
-    f_mobi.write(str('%04x'%palm_record_count).decode("hex"))
-    # Record size #
-    palm_record_size = 4096
-    f_mobi.write(str('%04x'%palm_record_size).decode("hex"))
-    # Current position #
-    palm_current_pos = 0
-    f_mobi.write(str('%08x'%palm_current_pos).decode("hex"))
-
+    palmdoc_hdr = PalmDOC_Header
+    palmdoc_hdr._3text_len = pack('>i', 75 + len(ip_data))
+    for i, v in sorted(palmdoc_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
 
 ################## MOBI Header ##################
     mobi_hdr = Mobi
-    # Identifier #
-    f_mobi.write(mobi_hdr.id)
-    # Header length #
-    mobi_hdr.hdr_len = 0x108
-    f_mobi.write(str('%08x'%mobi_hdr.hdr_len).decode("hex"))
-    # Mobi type #
-    f_mobi.write(str('%08x'%mobi_hdr.mobi_type).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.text_encoding).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.unique_id).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.file_ver).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.ortographic_idx).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.inflection_idx).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.index_names).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.index_keys).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.extra_idx_0).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.extra_idx_1).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.extra_idx_2).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.extra_idx_3).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.extra_idx_4).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.extra_idx_5).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.first_non_book_idx).decode("hex"))
-    mobi_hdr.full_name_offset = 0x1E4
-    f_mobi.write(str('%08x'%mobi_hdr.full_name_offset).decode("hex"))
-    mobi_hdr.full_name_len = 11
-    f_mobi.write(str('%08x'%mobi_hdr.full_name_len).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.locale).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.input_language).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.output_language).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.min_ver).decode("hex"))
-    mobi_hdr.first_img_idx = 3
-    f_mobi.write(str('%08x'%mobi_hdr.first_img_idx).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.huffman_rec_offset).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.huffman_record_count).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.huffman_table_offset).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.huffman_table_len).decode("hex"))
-    mobi_hdr.exth_flags = 0x850
-    f_mobi.write(str('%08x'%mobi_hdr.exth_flags).decode("hex"))
-    for i in range(32):
-        f_mobi.write("\x00")
-    f_mobi.write("\xFF\xFF\xFF\xFF")
-    f_mobi.write(str('%08x'%mobi_hdr.drm_offset).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.drm_count).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.drm_size).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.drm_flags).decode("hex"))
-    for i in range(8):
-        f_mobi.write("\x00")
-    f_mobi.write(str('%04x'%mobi_hdr.first_content_rec_num).decode("hex"))
-    f_mobi.write(str('%04x'%mobi_hdr.last_content_rec_num).decode("hex"))
-    f_mobi.write("\x00\x00\x00\x01")
-    f_mobi.write(str('%08x'%mobi_hdr.fcis_rec_num).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.fcis_rec_count).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.flis_rec_num).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.flis_rec_count).decode("hex"))
-    for i in range(8):
-        f_mobi.write("\x00")
-    f_mobi.write("\x00\x00\x00\x05")
-    f_mobi.write(str('%08x'%mobi_hdr.first_comp_data_sec_count).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.num_of_comp_data_sec).decode("hex"))
-    f_mobi.write("\xFF\xFF\xFF\xFF")
-    f_mobi.write(str('%08x'%mobi_hdr.extra_rec_data_flags).decode("hex"))
-    f_mobi.write(str('%08x'%mobi_hdr.indx_rec_offset).decode("hex"))
-    for i in range(20):
-        f_mobi.write("\xFF")
-    for i in range(4):
-        f_mobi.write("\x00")
-    for i in range(4):
-        f_mobi.write("\xFF")
-    for i in range(4):
-        f_mobi.write("\x00")
+    mobi_hdr._02hdr_len = pack('>i', 0x108)
+    mobi_hdr._18full_name_offset = pack('>i', 0x1E4)
+    mobi_hdr._19full_name_len = pack('>i', 11)
+    mobi_hdr._24first_img_idx = pack('>i', 3)
+    mobi_hdr._29exth_flags = pack('>i', 0x850) 
+    for i, v in sorted(mobi_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
         
 ################## EXTH Header ##################
     exth_hdr = Exth
@@ -397,50 +352,29 @@ def main():
     exth_hdr.padding = pdb_hdr.records_list[1] - 0x2D8
     for i in range(exth_hdr.padding):
         f_mobi.write("\x00")
-
     
 ################## Book Data ##################
 
     html_header = "<html DIR=\"RTL\"><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"><title> Thank you </title></head><body><p DIR=\"RTL\"> "
     html_footer = "</p> </body></html> \0"
-#     f_mobi.write(book_header+ip_data+book_footer)
+    f_mobi.write(html_header+ip_data+html_footer)
   
     f_mobi.write("\x00\x00")
   
 ################## FLIS ##################
     flis_hdr = FLIS
-    # Identifier #
-    f_mobi.write(flis_hdr.id)
-    # Header length #
-    f_mobi.write(str('%08x'%flis_hdr.fixed_val_1).decode("hex"))
-    f_mobi.write(str('%04x'%flis_hdr.fixed_val_2).decode("hex"))
-    f_mobi.write(str('%04x'%flis_hdr.fixed_val_3).decode("hex"))
-    f_mobi.write(str('%08x'%flis_hdr.fixed_val_4).decode("hex"))
-    f_mobi.write(str('%08x'%flis_hdr.fixed_val_5).decode("hex"))
-    f_mobi.write(str('%04x'%flis_hdr.fixed_val_6).decode("hex"))
-    f_mobi.write(str('%04x'%flis_hdr.fixed_val_7).decode("hex"))
-    f_mobi.write(str('%08x'%flis_hdr.fixed_val_8).decode("hex"))
-    f_mobi.write(str('%08x'%flis_hdr.fixed_val_9).decode("hex"))
-    f_mobi.write(str('%08x'%flis_hdr.fixed_val_10).decode("hex"))
-
+    for i, v in sorted(flis_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
   
 ################## FCIS ##################
     fcis_hdr = FCIS
-    # Identifier #
-    f_mobi.write(fcis_hdr.id)
-    # Header length #
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_1).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_2).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_3).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_4).decode("hex"))
-    fcis_hdr.text_len = palm_txt_len
-    f_mobi.write(str('%08x'%fcis_hdr.text_len).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_5).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_6).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_7).decode("hex"))
-    f_mobi.write(str('%04x'%fcis_hdr.fixed_val_8).decode("hex"))
-    f_mobi.write(str('%04x'%fcis_hdr.fixed_val_9).decode("hex"))
-    f_mobi.write(str('%08x'%fcis_hdr.fixed_val_10).decode("hex"))
+    fcis_hdr._06text_len = palmdoc_hdr._3text_len
+    for i, v in sorted(fcis_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
   
 ################## EOF ##################
     f_mobi.write("\xE9\x8E\x0D\x0A")
