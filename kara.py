@@ -2,24 +2,52 @@ import time
 from __builtin__ import int
 import locale
 from re import LOCALE
-from zipfile import ZipInfo, ZIP_DEFLATED
-import zipfile
 from struct import *
 from _ast import Num
 
 book_title = "Thank you"
 f_ip = open("inputfile.txt","r")
 f_html = open("outputfile.html", "w")
-html_header = "<html DIR=\"RTL\">\r\n<head>\r\n<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\">\r\n<title>" + book_title +"</title>\r\n</head>\r\n<body>\r\n<p DIR=\"RTL\">\r\n"
-html_footer = "\r\n</p>\r\n</body>\r\n</html>"
+html_header = "<html DIR=\"RTL\"><head>\r\r\n<meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"/>\r\r\n<title>" + book_title +"</title>\r\r\n</head><body aid=\"0\"></body></html>\r\r\n<p DIR=\"RTL\" aid=\"1\">\r\r\n"
+html_header_mod = "<html><head><guide></guide></head><body><p dir=\"RTL\"> "
+html_footer = "\r\r\n</p>\r\r\n"
+html_footer_mod = " </p>  </body></html>"
 ip_data = f_ip.read()
 html_data = html_header+ip_data+html_footer
 f_html.write(html_data)
 f_html.close()
 f_ip.close()
-myzip = zipfile.ZipFile('outputfile.zip', mode='w')
-myzip.write("outputfile.html", compress_type=zipfile.ZIP_DEFLATED)
-myzip.close()
+
+
+class TAGX:
+    _01id = 'TAGX'
+    _02hdr_len = 0
+    _03control_byte_count = 0
+
+
+class INDX:
+    _01id = 'INDX'
+    _02hdr_len = 0
+    _03idx_type = 0
+    _03zunknown = 0
+    _03zzunknown = 0
+    _04idxt_start = 0
+    _05idx_count = 0
+    _06idx_encoding = 0
+    _07idx_lang = 0
+    _08total_idx_count = 0
+    _09ordt_start = 0
+    _10ligt_start = 0
+    _10zunknown = 0
+    _10zzunknown = 0
+
+
+class CMET:
+    _01id = 'CMET'
+    _02fixed_val_1 = pack('>i', 0xC)
+    _03text_len = pack('>i', 10)
+#     _04text = pack('>i', 1)
+#     _05unknown_data = 'ts '
     
 class FLIS:
     _01id = 'FLIS'
@@ -47,14 +75,6 @@ class FCIS:
     _10fixed_val_8 = pack('>h', 1)
     _11fixed_val_9 = pack('>h', 1)
     _12fixed_val_10 = pack('>i', 0)
-
-class CMET:
-    _01id = 'CMET'
-    _02fixed_val_1 = pack('>i', 0xC)
-    _03text_len = 0
-    _04fixed_val_3 = 1
-    _05fixed_val_4 = 0
-
 
 class ExthRecord:
     rec_type = 0
@@ -161,25 +181,25 @@ class PDB_Header:
     _13unique_id_seed = pack('>i', 0x27)
     _14next_record_list = pack('>i', 0)
     _15num_records = pack('>h', 19)
-    records_list = [0x00E8, 
-                    0x22D0, 
-                    0x2322+0x67, 
-                    0x2324+0x67, 
-                    0x2348+0x67,
-                    0x2374+0x67,
-                    0x24B9+0x67,
-                    0x3045+0x67,
-                    0x304D+0x67, 
-                    0x5235+0x67,
-                    0x52E1+0x67, 
-                    0x53D9+0x67,
-                    0x54B5+0x67, 
-                    0x54C5+0x67, 
-                    0x55B9+0x67,
-                    0x5699+0x67, 
-                    0x56BD+0x67, 
-                    0x56E9+0x67, 
-                    0x5701+0x67]
+    records_list = [0x00E8, #PalmDOC + MOBI + EXTH
+                    0x22C0, #html
+                    0x2323, #00
+                    0x2324, #FLIS
+                    0x2348, #FCIS
+                    0x2374, #CMET
+                    0x28F0-0x564, #BOUNDARY 
+                    0x28F8-0x564, #PalmDOC + MOBI + EXTH
+                    0x4AD0-0x564, #html
+                    0x4BAA-0x564, #0000
+                    0x4BAC-0x564, #INDX
+                    0x4CA4-0x564, #INDX
+                    0x4D80-0x564, #P-//*[@aid='0']
+                    0x4D90-0x564, #INDX
+                    0x4E84-0x564, #INDX
+                    0x4F64-0x564, #FLIS
+                    0x4F88-0x564, #FCIS
+                    0x4FB4-0x564, #DATP
+                    0x4FCC-0x564] #EOF
     
 def main():
     f_mobi = open("outputfile.mobi","wb")
@@ -204,11 +224,11 @@ def main():
         record_unique_id_hex = str('%02x'%record_unique_id).decode("hex") 
         f_mobi.write("\x00\x00" + str('%04x'%i).decode("hex") + "\x00\x00\x00" + record_unique_id_hex)
         record_unique_id = record_unique_id + 2
-        if record_unique_id == 14:
-            record_unique_id = 16
+        if record_unique_id == 12:
+            record_unique_id = 14
     f_mobi.write(str('%04x'%zero_padding).decode("hex"))
-            
-            
+
+
 ################## PalmDOC Header ##################
     palmdoc_hdr = PalmDOC_Header
     palmdoc_hdr._3text_len = pack('>i', 75 + len(ip_data))
@@ -220,8 +240,8 @@ def main():
 ################## MOBI Header ##################
     mobi_hdr = Mobi
     mobi_hdr._02hdr_len = pack('>i', 0x108)
-    mobi_hdr._18full_name_offset = pack('>i', 0x1E4)
-    mobi_hdr._19full_name_len = pack('>i', 11)
+    mobi_hdr._18full_name_offset = pack('>i', 0x1D8)
+    mobi_hdr._19full_name_len = pack('>i', 9)
     mobi_hdr._24first_img_idx = pack('>i', 3)
     mobi_hdr._29exth_flags = pack('>i', 0x850) 
     for i, v in sorted(mobi_hdr.__dict__.iteritems()):
@@ -234,25 +254,25 @@ def main():
     # Identifier #
     f_mobi.write(exth_hdr.id)
     # Header length #
-    exth_hdr.hdr_len = 0xCC
+    exth_hdr.hdr_len = 0xC0
     f_mobi.write(str('%08x'%exth_hdr.hdr_len).decode("hex"))
-    exth_hdr.rec_count = 0xB
+    exth_hdr.rec_count = 0xA
     f_mobi.write(str('%08x'%exth_hdr.rec_count).decode("hex"))
 
-    exth_rec_1 = ExthRecord
-    exth_rec_1.rec_type = 0x216
-    f_mobi.write(str('%08x'%exth_rec_1.rec_type).decode("hex"))
-    exth_rec_1.rec_len = 0xB
-    f_mobi.write(str('%08x'%exth_rec_1.rec_len).decode("hex"))
-    exth_rec_1.rec_data = "kpr"
-    f_mobi.write(str(exth_rec_1.rec_data))
+#     exth_rec_1 = ExthRecord
+#     exth_rec_1.rec_type = 0x216
+#     f_mobi.write(str('%08x'%exth_rec_1.rec_type).decode("hex"))
+#     exth_rec_1.rec_len = 0xB
+#     f_mobi.write(str('%08x'%exth_rec_1.rec_len).decode("hex"))
+#     exth_rec_1.rec_data = "kpr"
+#     f_mobi.write(str(exth_rec_1.rec_data))
 
     exth_rec_2 = ExthRecord
     exth_rec_2.rec_type = 0x21E
     f_mobi.write(str('%08x'%exth_rec_2.rec_type).decode("hex"))
-    exth_rec_2.rec_len = 0xc
+    exth_rec_2.rec_len = 0xC
     f_mobi.write(str('%08x'%exth_rec_2.rec_len).decode("hex"))
-    exth_rec_2.rec_data = "HgIU"
+    exth_rec_2.rec_data = "W3bm"
     f_mobi.write(str(exth_rec_2.rec_data))
 
     exth_rec_3 = ExthRecord
@@ -344,21 +364,18 @@ def main():
     f_mobi.write(str('%08x'%exth_rec_11.rec_type).decode("hex"))
     exth_rec_11.rec_len = 0xC
     f_mobi.write(str('%08x'%exth_rec_11.rec_len).decode("hex"))
-    exth_rec_11.rec_data = 0x8
+    exth_rec_11.rec_data = 0x7
     f_mobi.write(str('%08x'%exth_rec_11.rec_data).decode("hex"))
 
-    f_mobi.write("\0 "+book_title+" \0")
+    f_mobi.write(book_title)
     
-    exth_hdr.padding = pdb_hdr.records_list[1] - 0x2D8
+    exth_hdr.padding = pdb_hdr.records_list[1] - pdb_hdr.records_list[0] - 0x1E1
     for i in range(exth_hdr.padding):
         f_mobi.write("\x00")
     
 ################## Book Data ##################
 
-    html_header = "<html DIR=\"RTL\"><head><meta http-equiv=\"Content-Type\" content=\"text/html;charset=UTF-8\"><title> Thank you </title></head><body><p DIR=\"RTL\"> "
-    html_footer = "</p> </body></html> \0"
-    f_mobi.write(html_header+ip_data+html_footer)
-  
+    f_mobi.write(html_header_mod+ip_data+html_footer_mod)  
     f_mobi.write("\x00\x00")
   
 ################## FLIS ##################
@@ -375,7 +392,343 @@ def main():
         if not i.startswith("__"):
             if i.startswith("_"):
                 f_mobi.write(v)
+
+
+################## CMET ##################
+    cmet_hdr = CMET
+    for i, v in sorted(cmet_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+#     for i in range(30):
+    f_mobi.write("MadeByKara")
+    f_mobi.write("\x00\x00")
+    
+
+
+################## BOUNDARY ##################
+    f_mobi.write("BOUNDARY")
   
+
+
+################## PalmDOC Header ##################
+    palmdoc_hdr2 = PalmDOC_Header
+    palmdoc_hdr2._3text_len = pack('>i', 194 + len(ip_data))
+    for i, v in sorted(palmdoc_hdr2.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+
+################## MOBI Header ##################
+    mobi_hdr2 = Mobi
+    mobi_hdr2._02hdr_len = pack('>i', 0x108)
+    mobi_hdr2._06file_ver = pack('>i', 0x8)
+    mobi_hdr2._07ortographic_idx = pack('>i', 0x3)
+    mobi_hdr2._17first_non_book_idx = pack('>i', 0x3)
+    mobi_hdr2._18full_name_offset = pack('>i', 0x1CC)
+    mobi_hdr2._19full_name_len = pack('>i', 9)
+    mobi_hdr2._23min_ver = pack('>i', 8)
+    mobi_hdr2._24first_img_idx = pack('>i', 8)
+    mobi_hdr2._29exth_flags = pack('>i', 0x50) 
+    mobi_hdr2._35last_content_rec_num = pack('>h', 7)
+    mobi_hdr2._36fcis_rec_num = pack('>i', 9)
+    mobi_hdr2._38flis_rec_num = pack('>i', 8)
+    mobi_hdr2._39zzzunused = pack('>I', 0xFFFFFFFF)
+    mobi_hdr2._40first_comp_data_sec_count = pack('>i', 0)
+    mobi_hdr2._43zunused = pack('>i', 3)
+    mobi_hdr2._43zzunused = pack('>i', 6)
+    mobi_hdr2._43zzzunused = pack('>i', 0xA)
+    for i, v in sorted(mobi_hdr2.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+        
+################## EXTH Header ##################
+    exth_hdr2 = Exth
+    # Identifier #
+    f_mobi.write(exth_hdr2.id)
+    # Header length #
+    exth_hdr2.hdr_len = 0xB4
+    f_mobi.write(str('%08x'%exth_hdr.hdr_len).decode("hex"))
+    exth_hdr.rec_count = 0x9
+    f_mobi.write(str('%08x'%exth_hdr.rec_count).decode("hex"))
+
+#     exth_rec_1 = ExthRecord
+#     exth_rec_1.rec_type = 0x216
+#     f_mobi.write(str('%08x'%exth_rec_1.rec_type).decode("hex"))
+#     exth_rec_1.rec_len = 0xB
+#     f_mobi.write(str('%08x'%exth_rec_1.rec_len).decode("hex"))
+#     exth_rec_1.rec_data = "kpr"
+#     f_mobi.write(str(exth_rec_1.rec_data))
+
+    exth_rec_2 = ExthRecord
+    exth_rec_2.rec_type = 0x21E
+    f_mobi.write(str('%08x'%exth_rec_2.rec_type).decode("hex"))
+    exth_rec_2.rec_len = 0xC
+    f_mobi.write(str('%08x'%exth_rec_2.rec_len).decode("hex"))
+    exth_rec_2.rec_data = "W3bm"
+    f_mobi.write(str(exth_rec_2.rec_data))
+
+    exth_rec_3 = ExthRecord
+    exth_rec_3.rec_type = 0x12C
+    f_mobi.write(str('%08x'%exth_rec_3.rec_type).decode("hex"))
+    exth_rec_3.rec_len = 0x34
+    f_mobi.write(str('%08x'%exth_rec_3.rec_len).decode("hex"))
+    exth_rec_3.rec_data = 0x01200000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000080
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x00000000
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0xBCAFF0BE
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x0CB90CCA
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+    exth_rec_3.rec_data = 0x0CC30CC5
+    f_mobi.write(str('%08x'%exth_rec_3.rec_data).decode("hex"))
+
+    exth_rec_4 = ExthRecord
+    exth_rec_4.rec_type = 0xCC
+    f_mobi.write(str('%08x'%exth_rec_4.rec_type).decode("hex"))
+    exth_rec_4.rec_len = 0xC
+    f_mobi.write(str('%08x'%exth_rec_4.rec_len).decode("hex"))
+    exth_rec_4.rec_data = 0xC8
+    f_mobi.write(str('%08x'%exth_rec_4.rec_data).decode("hex"))
+
+    exth_rec_5 = ExthRecord
+    exth_rec_5.rec_type = 0xCD
+    f_mobi.write(str('%08x'%exth_rec_5.rec_type).decode("hex"))
+    exth_rec_5.rec_len = 0xC
+    f_mobi.write(str('%08x'%exth_rec_5.rec_len).decode("hex"))
+    exth_rec_5.rec_data = 0x2
+    f_mobi.write(str('%08x'%exth_rec_5.rec_data).decode("hex"))
+
+    exth_rec_6 = ExthRecord
+    exth_rec_6.rec_type = 0xCE
+    f_mobi.write(str('%08x'%exth_rec_6.rec_type).decode("hex"))
+    exth_rec_6.rec_len = 0xC
+    f_mobi.write(str('%08x'%exth_rec_6.rec_len).decode("hex"))
+    exth_rec_6.rec_data = 0x9
+    f_mobi.write(str('%08x'%exth_rec_6.rec_data).decode("hex"))
+
+    exth_rec_7 = ExthRecord
+    exth_rec_7.rec_type = 0x217
+    f_mobi.write(str('%08x'%exth_rec_7.rec_type).decode("hex"))
+    exth_rec_7.rec_len = 0x14
+    f_mobi.write(str('%08x'%exth_rec_7.rec_len).decode("hex"))
+    exth_rec_7.rec_data = "1029-0897292"
+    f_mobi.write(exth_rec_7.rec_data)
+
+    exth_rec_8 = ExthRecord
+    exth_rec_8.rec_type = 0xCF
+    f_mobi.write(str('%08x'%exth_rec_8.rec_type).decode("hex"))
+    exth_rec_8.rec_len = 0xC
+    f_mobi.write(str('%08x'%exth_rec_8.rec_len).decode("hex"))
+    exth_rec_8.rec_data = 0x0
+    f_mobi.write(str('%08x'%exth_rec_8.rec_data).decode("hex"))
+
+    exth_rec_9 = ExthRecord
+    exth_rec_9.rec_type = 0x223
+    f_mobi.write(str('%08x'%exth_rec_9.rec_type).decode("hex"))
+    exth_rec_9.rec_len = 0x18
+    f_mobi.write(str('%08x'%exth_rec_9.rec_len).decode("hex"))
+    exth_rec_9.rec_data = "I\0n\0M\0e\0m\0o\0r\0y\0"
+    f_mobi.write(exth_rec_9.rec_data)
+
+    exth_rec_10 = ExthRecord
+    exth_rec_10.rec_type = 0x7D
+    f_mobi.write(str('%08x'%exth_rec_10.rec_type).decode("hex"))
+    exth_rec_10.rec_len = 0xC
+    f_mobi.write(str('%08x'%exth_rec_10.rec_len).decode("hex"))
+    exth_rec_10.rec_data = 0x0
+    f_mobi.write(str('%08x'%exth_rec_10.rec_data).decode("hex"))
+
+    f_mobi.write(book_title)
+    
+    exth_hdr2.padding = pdb_hdr.records_list[8] - pdb_hdr.records_list[7] - 0x1D5
+    for i in range(exth_hdr2.padding):
+        f_mobi.write("\x00")
+
+
+################## Book Data ##################
+
+    f_mobi.write(html_header+ip_data+html_footer)  
+    f_mobi.write("\x00\x00\x00")
+
+
+################## INDX Header ##################
+    indx_hdr = INDX
+    indx_hdr._02hdr_len = pack('>I', 0xC0)
+    indx_hdr._03idx_type = pack('>I', 0)
+    indx_hdr._03zunknown = pack('>I', 0)
+    indx_hdr._03zzunknown = pack('>I', 2)
+    indx_hdr._04idxt_start = pack('>I', 0xF0)
+    indx_hdr._05idx_count = pack('>I', 1)
+    indx_hdr._06idx_encoding = pack('>I', 65001)
+    indx_hdr._07idx_lang = pack('>I', 0xFFFFFFFF)
+    indx_hdr._08total_idx_count = pack('>I', 1)
+    indx_hdr._09ordt_start = pack('>I', 0)
+    indx_hdr._10ligt_start = pack('>I', 0)
+    indx_hdr._10zunknown = pack('>I', 0)
+    indx_hdr._10zzunknown = pack('>I', 1)
+    for i, v in sorted(indx_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+    for i in range(0x7C):
+        f_mobi.write("\x00")
+    f_mobi.write("\x00\x00\x00\xC0")
+    f_mobi.write("\x00\x00\x00\x00")
+    f_mobi.write("\x00\x00\x00\x00")
+    tagx_hdr = TAGX
+    tagx_hdr._02hdr_len = pack('>I', 0x20)
+    tagx_hdr._03control_byte_count = pack('>I', 1)
+    for i, v in sorted(tagx_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+    f_mobi.write("\x02\x01\x01\x00")
+    f_mobi.write("\x03\x01\x02\x00")
+    f_mobi.write("\x04\x01\x04\x00")
+    f_mobi.write("\x06\x02\x08\x00")
+    f_mobi.write("\x00\x00\x00\x01")
+    f_mobi.write("\n0000000143\0")
+    f_mobi.write("\x01\x00\x00\x00")
+    f_mobi.write('IDXT')
+    f_mobi.write("\x00\xE0\x00\x00")
+
+################## INDX Header ##################
+    indx_hdr2 = INDX
+    indx_hdr2._02hdr_len = pack('>I', 0xC0)
+    indx_hdr2._03idx_type = pack('>I', 0)
+    indx_hdr2._03zunknown = pack('>I', 1)
+    indx_hdr2._03zzunknown = pack('>I', 0)
+    indx_hdr2._04idxt_start = pack('>I', 0xD4)
+    indx_hdr2._05idx_count = pack('>I', 1)
+    indx_hdr2._06idx_encoding = pack('>I', 0xFFFFFFFF)
+    indx_hdr2._07idx_lang = pack('>I', 0xFFFFFFFF)
+    indx_hdr2._08total_idx_count = pack('>I', 0)
+    indx_hdr2._09ordt_start = pack('>I', 0)
+    indx_hdr2._10ligt_start = pack('>I', 0)
+    indx_hdr2._10zunknown = pack('>I', 0)
+    indx_hdr2._10zzunknown = pack('>I', 0)
+    for i, v in sorted(indx_hdr2.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+    for i in range(0x88):
+        f_mobi.write("\x00")
+    f_mobi.write("\n0000000143\x0F")
+    f_mobi.write("\x80\x80\x80\x80")
+    f_mobi.write("\xBC\x00\x00\x00")
+    f_mobi.write('IDXT')
+    f_mobi.write("\x00\xC0\x00\x00")
+
+################## Unknown ##################
+    f_mobi.write("\x8F")
+    f_mobi.write("P-//*[@aid=\'0\']")
+
+
+################## INDX Header ##################
+    indx_hdr3 = INDX
+    indx_hdr3._02hdr_len = pack('>I', 0xC0)
+    indx_hdr3._03idx_type = pack('>I', 0)
+    indx_hdr3._03zunknown = pack('>I', 0)
+    indx_hdr3._03zzunknown = pack('>I', 2)
+    indx_hdr3._04idxt_start = pack('>I', 0xEC)
+    indx_hdr3._05idx_count = pack('>I', 1)
+    indx_hdr3._06idx_encoding = pack('>I', 65001)
+    indx_hdr3._07idx_lang = pack('>I', 0xFFFFFFFF)
+    indx_hdr3._08total_idx_count = pack('>I', 1)
+    indx_hdr3._09ordt_start = pack('>I', 0)
+    indx_hdr3._10ligt_start = pack('>I', 0)
+    indx_hdr3._10zunknown = pack('>I', 0)
+    indx_hdr3._10zzunknown = pack('>I', 0)
+    for i, v in sorted(indx_hdr3.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+    for i in range(0x7C):
+        f_mobi.write("\x00")
+    f_mobi.write("\x00\x00\x00\xC0")
+    f_mobi.write("\x00\x00\x00\x00")
+    f_mobi.write("\x00\x00\x00\x00")
+    tagx_hdr = TAGX
+    tagx_hdr._02hdr_len = pack('>I', 0x18)
+    tagx_hdr._03control_byte_count = pack('>I', 1)
+    for i, v in sorted(tagx_hdr.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+    f_mobi.write("\x01\x01\x03\x00")
+    f_mobi.write("\x06\x02\x0C\x00")
+    f_mobi.write("\x00\x00\x00\x01")
+    f_mobi.write("\x0ESKEL0000000000\0")
+    f_mobi.write("\x01\x00\x00\x00")
+    f_mobi.write('IDXT')
+    f_mobi.write("\x00\xD8\x00\x00")
+
+################## INDX Header ##################
+    indx_hdr4 = INDX
+    indx_hdr4._02hdr_len = pack('>I', 0xC0)
+    indx_hdr4._03idx_type = pack('>I', 0)
+    indx_hdr4._03zunknown = pack('>I', 1)
+    indx_hdr4._03zzunknown = pack('>I', 0)
+    indx_hdr4._04idxt_start = pack('>I', 0xD8)
+    indx_hdr4._05idx_count = pack('>I', 1)
+    indx_hdr4._06idx_encoding = pack('>I', 0xFFFFFFFF)
+    indx_hdr4._07idx_lang = pack('>I', 0xFFFFFFFF)
+    indx_hdr4._08total_idx_count = pack('>I', 0)
+    indx_hdr4._09ordt_start = pack('>I', 0)
+    indx_hdr4._10ligt_start = pack('>I', 0)
+    indx_hdr4._10zunknown = pack('>I', 0)
+    indx_hdr4._10zzunknown = pack('>I', 0)
+    for i, v in sorted(indx_hdr4.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+    for i in range(0x88):
+        f_mobi.write("\x00")
+    f_mobi.write("\x0ESKEL0000000000\n")
+    f_mobi.write("\x81\x81\x80\x01")
+    f_mobi.write("\x9D\x80\x01\x9D")
+    f_mobi.write('IDXT')
+    f_mobi.write("\x00\xC0\x00\x00")
+
+
+################## FLIS ##################
+    flis_hdr2 = FLIS
+    for i, v in sorted(flis_hdr2.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+  
+################## FCIS ##################
+    fcis_hdr2 = FCIS
+    fcis_hdr2._06text_len = palmdoc_hdr._3text_len
+    for i, v in sorted(fcis_hdr2.__dict__.iteritems()):
+        if not i.startswith("__"):
+            if i.startswith("_"):
+                f_mobi.write(v)
+
+################## DATP ##################
+    f_mobi.write('DATP')
+    f_mobi.write("\x00\x00\x00\x0D")
+    f_mobi.write("\x01\x04\x00\x01")
+    f_mobi.write("\x02\x00\x00\x00")
+    f_mobi.write("\x00\x00\x00\x00")
+    f_mobi.write("\x00\x00\x00\x00")
+
 ################## EOF ##################
     f_mobi.write("\xE9\x8E\x0D\x0A")
   
